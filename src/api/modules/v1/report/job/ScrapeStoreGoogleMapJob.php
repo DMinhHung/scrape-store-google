@@ -3,10 +3,10 @@ namespace app\api\modules\v1\report\job;
 
 use Yii;
 use yii\base\BaseObject;
-use yii\base\InvalidConfigException;
 use yii\httpclient\Client;
-use yii\httpclient\Exception;
 use yii\queue\JobInterface;
+use yii\httpclient\Exception;
+use yii\base\InvalidConfigException;
 use app\api\components\mqtt\MQTTService;
 use app\api\modules\v1\report\models\Business;
 
@@ -49,11 +49,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $averageStorePositions = $this->calculateAveragePositions($storePositions);
 
             // Prepare payload for MQTT
-            $mqttPayload = [
-                'grid_point' => $regionResults,
-                'average_positions' => $averageStorePositions,
-                'token' => $this->token,
-            ];
+            $mqttPayload = ['grid_point' => $regionResults, 'average_positions' => $averageStorePositions, 'token' => $this->token,];
 
             // Publish to MQTT
             $topic = 'local_report/business/data';
