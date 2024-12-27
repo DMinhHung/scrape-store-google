@@ -137,15 +137,9 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         $averageStorePositions = [];
         foreach ($limitedStorePositions as  $data) {
             $averagePosition = $data['totalPosition'] / $data['count'];
-            $store = $data['details'];
-            $data = [
-                'title' => $store['title'],
-                'type' => $store['type'],
-                'rating' => $store['rating'],
-            ];
-            
+
             $averageStorePositions[] = [
-                'store' => $data,
+                'position_store' => $data['details']['title'],
                 'average_position' => round($averagePosition, 2),
             ];
         }
