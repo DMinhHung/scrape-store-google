@@ -3,10 +3,10 @@ FROM nginx/unit:1.27.0-php8.1
 RUN apt-get -y update
 RUN apt-get -y install git
 
-#supervíor
+# Supervisor
 RUN apt-get update && apt-get install -y supervisor
 
-#install composer
+# Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /app
@@ -34,5 +34,8 @@ COPY .unit.conf.json /docker-entrypoint.d/.unit.conf.json
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN chmod 0644 /etc/supervisor/conf.d/supervisord.conf
 
+RUN docker-php-ext-install pdo pdo_mysql
+
 CMD ["/usr/bin/supervisord"]
+
 EXPOSE 80 9001

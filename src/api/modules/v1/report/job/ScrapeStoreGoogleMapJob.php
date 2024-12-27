@@ -33,8 +33,17 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $regionResults = [];
             $storePositions = [];
 
+            $currentPoint = 0;
+
             foreach ($points as $point) {
+                //calculate process
+                $currentPoint++;
+                $progress = min(100, rand($currentPoint * 10, ($currentPoint + 1) * 10));
+                $message = "{$progress}%";
+                //calculate process
                 $this->processStoreData($point, $regionResults, $storePositions, $business);
+                $progressPayload = ['message' => $message,'token' => $this->token,];
+                $mqttService->publish('local_report/business/data', json_encode($progressPayload));
             }
 
             $averageStorePositions = $this->calculateAveragePositions($storePositions);
