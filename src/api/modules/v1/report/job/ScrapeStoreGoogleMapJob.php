@@ -43,11 +43,10 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                 //calculate process
                 $this->processStoreData($point, $regionResults, $storePositions, $business);
                 $progressPayload = ['message' => $message,'token' => $this->token,];
-                $mqttService->publish('local_report/business/progress', json_encode($progressPayload));
+                $mqttService->publish('local_report/business/data', json_encode($progressPayload));
             }
 
             $averageStorePositions = $this->calculateAveragePositions($storePositions);
-            Yii::info('Average Store Positions: ' . json_encode($averageStorePositions), __METHOD__);
 
             // Prepare payload for MQTT
             $mqttPayload = ['grid_point' => $regionResults, 'average_positions' => $averageStorePositions, 'token' => $this->token,];
