@@ -47,9 +47,10 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             }
 
             $averageStorePositions = $this->calculateAveragePositions($storePositions);
+            Yii::info('Average Store Positions: ' . json_encode($averageStorePositions), __METHOD__);
 
             // Prepare payload for MQTT
-            $mqttPayload = ['grid_point' => $regionResults, 'token' => $this->token,];
+            $mqttPayload = ['grid_point' => $regionResults, 'average_positions' => $averageStorePositions, 'token' => $this->token,];
 
             // Publish to MQTT
             $topic = 'local_report/business/data';
@@ -139,7 +140,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $averagePosition = $data['totalPosition'] / $data['count'];
             $averageStorePositions[] = [
                 'store' => $data,
-                'average_position' => $averagePosition,
+                'average_position' => round($averagePosition, 2),
             ];
         }
 

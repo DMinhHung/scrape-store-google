@@ -43,6 +43,17 @@ $config = [
             'mutex' => \yii\mutex\MysqlMutex::class,
             'serializer' => \yii\queue\serializers\JsonSerializer::class
         ],
+        'log' => [
+            'targets' => [
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning', 'info'],
+                    'logFile' => '@runtime/logs/app.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 5,
+                ],
+            ],
+        ],
     ],
     'bootstrap' => ['queue'],
 

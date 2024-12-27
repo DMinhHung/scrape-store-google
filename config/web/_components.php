@@ -20,6 +20,18 @@ $components = [
     'db' => require('_db.php'),
     'db2' => require('_db2.php'),
 
+    'log' => [
+        'targets' => [
+            [
+                'class' => 'yii\log\FileTarget',
+                'levels' => ['error', 'warning', 'info'],
+                'logFile' => '@runtime/logs/app.log',
+                'maxFileSize' => 1024 * 2,
+                'maxLogFiles' => 5,
+            ],
+        ],
+    ],
+
     'queue' => [
         'class' => \yii\queue\db\Queue::class,
         'db' => 'db2',
