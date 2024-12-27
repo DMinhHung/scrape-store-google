@@ -39,32 +39,32 @@ class BusinessController extends Controller
         return $response->build();
     }
 
-//    public function actionStore()
-//    {
-//        $request = Yii::$app->request;
-//        try {
-//            $latitude = $request->getQueryParam('latitude');
-//            $longitude = $request->getQueryParam('longitude');
-//            $zoom = $request->getQueryParam('zoom');
-//            $distance = $request->getQueryParam('distance');
-//            $token = Yii::$app->security->generateRandomString();
-//
-//            // Push job to queue
-//            Yii::$app->queue->push(new ScrapeStoreGoogleMapJob([
-//                'latitude' => $latitude,
-//                'longitude' => $longitude,
-//                'zoom' => $zoom,
-//                'distance' => $distance,
-//                'token' => $token
-//            ]));
-//
-//            $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'data' => $token, 'message' => "Data retrieved successfully", 'ok_status' => ApiConstant::STATUS_OK,]);
-//            return $response->build();
-//        } catch (\Exception $e) {
-//            $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'message' => "Data retrieved fail", 'ok_status' => ApiConstant::STATUS_OK,]);
-//            return $response->build();
-//        }
-//    }
+    public function actionStore()
+    {
+        $request = Yii::$app->request;
+        try {
+            $latitude = $request->getQueryParam('latitude');
+            $longitude = $request->getQueryParam('longitude');
+            $zoom = $request->getQueryParam('zoom');
+            $distance = $request->getQueryParam('distance');
+            $token = Yii::$app->security->generateRandomString();
+
+            // Push job to queue
+            Yii::$app->queue->push(new ScrapeStoreGoogleMapJob([
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'zoom' => $zoom,
+                'distance' => $distance,
+                'token' => $token
+            ]));
+
+            $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'data' => $token, 'message' => "Data retrieved successfully", 'ok_status' => ApiConstant::STATUS_OK,]);
+            return $response->build();
+        } catch (\Exception $e) {
+            $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'message' => "Data retrieved fail", 'ok_status' => ApiConstant::STATUS_OK,]);
+            return $response->build();
+        }
+    }
 
     /**
      * @throws Exception
@@ -73,14 +73,12 @@ class BusinessController extends Controller
      */
     public function actionIndex()
     {
-        // Lấy thông tin từ request hoặc tham số
         $latitude = Yii::$app->request->get('latitude');
         $longitude = Yii::$app->request->get('longitude');
         $zoom = Yii::$app->request->get('zoom');
         $distance = Yii::$app->request->get('distance');
         $token = Yii::$app->security->generateRandomString();
 
-        // Tạo các điểm lưới xung quanh vị trí hiện tại
         $earth_radius = Business::EARTH_RADIUS;
         $points = [];
 
