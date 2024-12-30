@@ -17,4 +17,5 @@ class Business extends BaseBusiness
 {
     const DEFAULT_DISTANCE = 1;
     const EARTH_RADIUS = 6371;
+    const DEFAUL_SEARCH = 'nail salon near me';
 }

@@ -65,12 +65,17 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
 
         for ($i = -1; $i <= 1; $i++) {
             for ($j = -1; $j <= 1; $j++) {
-                $new_latitude = $this->latitude + ($i * $this->distance / $earth_radius) * (180 / pi());
-                $new_longitude = $this->longitude + ($j * $this->distance / ($earth_radius * cos(deg2rad($this->latitude)))) * (180 / pi());
-                $points[] = [
-                    'latitude' => $new_latitude,
-                    'longitude' => $new_longitude
-                ];
+                $distance = sqrt($i ** 2 + $j ** 2) * $this->distance;
+
+                if ($distance <= $this->distance) {
+                    $new_latitude = $this->latitude + ($i * $distance / $earth_radius) * (180 / pi());
+                    $new_longitude = $this->longitude + ($j * $distance / ($earth_radius * cos(deg2rad($this->latitude)))) * (180 / pi());
+
+                    $points[] = [
+                        'latitude' => $new_latitude,
+                        'longitude' => $new_longitude
+                    ];
+                }
             }
         }
 
@@ -88,12 +93,11 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
      */
     private function processStoreData($point, &$regionResults, &$storePositions, $business)
     {
-        $q = "nail salon near me";
         $latitude = sprintf('%.15f', $point['latitude']);
         $longitude = sprintf('%.15f', $point['longitude']);
         $ll = "@$latitude,$longitude,$this->zoom";
         $apiKey = env('KEY_SCRAPER');
-        $url = env('API_SCRAPER') . "&q=" . urlencode($q) . "&ll=" . urlencode($ll) . "&apiKey=" . $apiKey;
+        $url = env('API_SCRAPER') . "&q=" . urlencode(Business::DEFAUL_SEARCH) . "&ll=" . urlencode($ll) . "&apiKey=" . $apiKey;
 
         $client = new Client();
         $response = $client->createRequest()
@@ -104,7 +108,10 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         if ($response->isOk) {
             $this->processResponseData($response->data, $point, $regionResults, $storePositions, $business);
         } else {
-            $regionResults[] = ['point' => $point, 'grid_point_rank' => null];
+            $regionResults[] = [
+                'point' => $point,
+                'grid_point_rank' => null,
+            ];
         }
     }
 
@@ -132,12 +139,9 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
 
     private function calculateAveragePositions($storePositions)
     {
-        $limitedStorePositions = array_slice($storePositions, 0, 10, true);
-
         $averageStorePositions = [];
-        foreach ($limitedStorePositions as  $data) {
+        foreach (array_slice($storePositions, 0, 10, true) as $data) {
             $averagePosition = $data['totalPosition'] / $data['count'];
-
             $averageStorePositions[] = [
                 'store_title' => $data['details']['title'],
                 'store_avg' => round($averagePosition, 2),
