@@ -63,10 +63,14 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         $earth_radius = Business::EARTH_RADIUS;
         $points = [];
 
+        $latitude_conversion_factor = (180 / pi()) * ($this->distance / $earth_radius);
+        $cos_latitude = cos(deg2rad($this->latitude));
+        $longitude_conversion_factor = (180 / pi()) * ($this->distance / ($earth_radius * $cos_latitude));
+
         for ($i = -1; $i <= 1; $i++) {
             for ($j = -1; $j <= 1; $j++) {
-                $new_latitude = $this->latitude + ($i * $this->distance / $earth_radius) * (180 / pi());
-                $new_longitude = $this->longitude + ($j * $this->distance / ($earth_radius * cos(deg2rad($this->latitude)))) * (180 / pi());
+                $new_latitude = $this->latitude + ($i * $latitude_conversion_factor);
+                $new_longitude = $this->longitude + ($j * $longitude_conversion_factor);
 
                 $points[] = [
                     'latitude' => $new_latitude,
@@ -102,34 +106,33 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             ->send();
 
         if ($response->isOk) {
-            $this->processResponseData($response->data, $point, $regionResults, $storePositions, $business);
+            if (!empty($response->data['places'])) {
+                foreach ($response->data['places'] as $place) {
+                    $placeId = $place['placeId'];
+
+                    if (!isset($storePositions[$placeId])) {
+                        $storePositions[$placeId] = [
+                            'totalPosition' => 0,
+                            'count' => 0,
+                            'details' => $place,
+                        ];
+                    }
+                    $storePositions[$placeId]['totalPosition'] += $place['position'];
+                    $storePositions[$placeId]['count']++;
+
+                    if ($placeId === $business->place_id) {
+                        $regionResults[] = [
+                            'point' => $point,
+                            'grid_point_rank' => $place['position'],
+                        ];
+                    }
+                }
+            }
         } else {
             $regionResults[] = [
                 'point' => $point,
                 'grid_point_rank' => null,
             ];
-        }
-    }
-
-    private function processResponseData($data, $point, &$regionResults, &$storePositions, $business)
-    {
-        if (isset($data['places']) && is_array($data['places'])) {
-            foreach ($data['places'] as $place) {
-                $placeId = $place['placeId'];
-
-                if (!isset($storePositions[$placeId])) {
-                    $storePositions[$placeId] = [
-                        'totalPosition' => 0, 'count' => 0, 'details' => $place,
-                    ];
-                }
-
-                $storePositions[$placeId]['totalPosition'] += $place['position'];
-                $storePositions[$placeId]['count']++;
-
-                if ($placeId === $business->place_id) {
-                    $regionResults[] = ['point' => $point, 'grid_point_rank' => $place['position']];
-                }
-            }
         }
     }
 
