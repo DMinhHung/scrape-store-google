@@ -65,17 +65,13 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
 
         for ($i = -1; $i <= 1; $i++) {
             for ($j = -1; $j <= 1; $j++) {
-                $distance = sqrt($i ** 2 + $j ** 2) * $this->distance;
+                $new_latitude = $this->latitude + ($i * $this->distance / $earth_radius) * (180 / pi());
+                $new_longitude = $this->longitude + ($j * $this->distance / ($earth_radius * cos(deg2rad($this->latitude)))) * (180 / pi());
 
-                if ($distance <= $this->distance) {
-                    $new_latitude = $this->latitude + ($i * $distance / $earth_radius) * (180 / pi());
-                    $new_longitude = $this->longitude + ($j * $distance / ($earth_radius * cos(deg2rad($this->latitude)))) * (180 / pi());
-
-                    $points[] = [
-                        'latitude' => $new_latitude,
-                        'longitude' => $new_longitude
-                    ];
-                }
+                $points[] = [
+                    'latitude' => $new_latitude,
+                    'longitude' => $new_longitude
+                ];
             }
         }
 
