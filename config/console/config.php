@@ -1,4 +1,7 @@
 <?php
+
+use yii\queue\LogBehavior;
+
 $config = [
     'id' => 'console',
     'basePath' => dirname(__DIR__,2)."/src",
@@ -41,7 +44,8 @@ $config = [
             'tableName' => '{{%queue}}',
             'channel' => 'default',
             'mutex' => \yii\mutex\MysqlMutex::class,
-            'serializer' => \yii\queue\serializers\JsonSerializer::class
+            'serializer' => \yii\queue\serializers\JsonSerializer::class,
+            'as log' => LogBehavior::class
         ],
         'log' => [
             'targets' => [

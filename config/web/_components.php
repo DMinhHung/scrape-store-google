@@ -1,4 +1,7 @@
 <?php
+
+use yii\queue\LogBehavior;
+
 $routeRules = require('_routes.php');
 $components = [
     'errorHandler' => [
@@ -39,6 +42,7 @@ $components = [
         'channel' => 'default',
         'mutex' => \yii\mutex\MysqlMutex::class,
         'serializer' => \yii\queue\serializers\JsonSerializer::class,
+        'as log' => LogBehavior::class
     ],
 
     'urlManager' => [
@@ -53,4 +57,5 @@ $components = [
         'format' => \yii\web\Response::FORMAT_JSON,
     ],
 ];
+
 return $components;
