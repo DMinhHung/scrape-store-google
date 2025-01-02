@@ -42,7 +42,7 @@ $components = [
         'channel' => 'default',
         'mutex' => \yii\mutex\MysqlMutex::class,
         'serializer' => \yii\queue\serializers\JsonSerializer::class,
-        'ttr' => 7200,
+        'ttr' => 14400,
         'as log' => LogBehavior::class
     ],
 
