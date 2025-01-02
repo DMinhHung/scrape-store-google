@@ -45,7 +45,7 @@ $config = [
             'channel' => 'default',
             'mutex' => \yii\mutex\MysqlMutex::class,
             'serializer' => \yii\queue\serializers\JsonSerializer::class,
-            'ttr' => 600,
+            'ttr' => 7200,
             'as log' => LogBehavior::class
         ],
         'log' => [

@@ -125,14 +125,14 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                             'point' => $point,
                             'grid_point_rank' => $place['position'],
                         ];
+                    } else {
+                        $regionResults[] = [
+                            'point' => $point,
+                            'grid_point_rank' => null,
+                        ];
                     }
                 }
             }
-        } else {
-            $regionResults[] = [
-                'point' => $point,
-                'grid_point_rank' => null,
-            ];
         }
     }
 
