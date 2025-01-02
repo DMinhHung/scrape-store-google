@@ -34,6 +34,9 @@ COPY .unit.conf.json /docker-entrypoint.d/.unit.conf.json
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN chmod 0644 /etc/supervisor/conf.d/supervisord.conf
 
+
+RUN apt-get update && apt-get install -y vim
+
 RUN docker-php-ext-install pdo pdo_mysql
 
 CMD ["/usr/bin/supervisord"]
