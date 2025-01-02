@@ -109,12 +109,20 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             if (!empty($response->data['places'])) {
                 foreach ($response->data['places'] as $place) {
                     $placeId = $place['placeId'];
-
                     if (!isset($storePositions[$placeId])) {
                         $storePositions[$placeId] = [
                             'totalPosition' => 0,
                             'count' => 0,
-                            'details' => $place,
+                            'details' => [
+                                'placeId' => $place['placeId'],
+                                'position' => $place['position'],
+                                'title' => $place['title'],
+                                'rating' => $place['rating'],
+                                'type' => $place['type'],
+                                'address' => $place['address'],
+                                'latitude' => $place['latitude'],
+                                'longitude' => $place['longitude'],
+                            ],
                         ];
                     }
                     $storePositions[$placeId]['totalPosition'] += $place['position'];
