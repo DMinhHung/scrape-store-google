@@ -26,7 +26,7 @@ RUN mkdir -p runtime web/assets && \
     chmod -R 775 runtime web/assets
 
 RUN mkdir -p /app/runtime/logs /app/web/assets /var/log/supervisor /var/run/supervisor && \
-    chmod -R 777 /var/log/supervisor /var/run/supervisor
+     chmod -R 777 /app/runtime/logs /app/web/assets /var/log/supervisor /var/run/supervisor
 
 RUN chown -R unit:unit /app
 COPY .unit.conf.json /docker-entrypoint.d/.unit.conf.json
