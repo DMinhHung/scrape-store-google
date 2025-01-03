@@ -19,6 +19,7 @@ ADD yii /app/
 ADD ./web /app/web/
 ADD ./src /app/src/
 ADD ./config /app/config
+ADD ./runtime /app/runtime
 
 COPY ./app.env-dist ./app.env
 
