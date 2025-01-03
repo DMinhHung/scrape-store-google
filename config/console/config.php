@@ -37,7 +37,6 @@ $config = [
 
     'components' => [
         'db' => require('_db.php'),
-//        'db2' => require('_db2.php'),
 
         'redis' => [
             'class' => Connection::class,
@@ -49,6 +48,7 @@ $config = [
 
         'mutex' => [
             'class' => \yii\redis\Mutex::class,
+            'redis' => 'redis',
         ],
 
         'queue' => [
