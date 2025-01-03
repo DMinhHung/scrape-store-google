@@ -58,7 +58,7 @@ class BusinessController extends Controller
             $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'data' => $token, 'message' => "Data retrieved successfully", 'ok_status' => ApiConstant::STATUS_OK,]);
             return $response->build();
         } catch (\Exception) {
-            $response = new ResponseHelper(['status' => ApiConstant::STATUS_OK, 'message' => "Data retrieved fail", 'ok_status' => ApiConstant::STATUS_OK,]);
+            $response = new ResponseHelper(['status' => ApiConstant::STATUS_FAIL, 'message' => "Data retrieved fail", 'ok_status' => ApiConstant::STATUS_FAIL,]);
             return $response->build();
         }
     }

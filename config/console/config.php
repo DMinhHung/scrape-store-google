@@ -1,6 +1,7 @@
 <?php
 
 use yii\queue\LogBehavior;
+use yii\redis\Connection;
 
 $config = [
     'id' => 'console',
@@ -36,18 +37,25 @@ $config = [
 
     'components' => [
         'db' => require('_db.php'),
-        'db2' => require('_db2.php'),
+//        'db2' => require('_db2.php'),
+
+        'redis' => [
+            'class' => Connection::class,
+            'hostname' => '103.150.124.149',
+            'port' => 11379,
+            'database' => 0,
+            'retries' => 1,
+        ],
 
         'queue' => [
-            'class' => \yii\queue\db\Queue::class,
-            'db' => 'db2',
-            'tableName' => '{{%queue}}',
-            'channel' => 'default',
-            'mutex' => \yii\mutex\MysqlMutex::class,
-            'serializer' => \yii\queue\serializers\JsonSerializer::class,
-            'ttr' => 14400,
-            'as log' => LogBehavior::class
+            'class' => \yii\queue\redis\Queue::class,
+            'redis' => 'redis',
+            'channel' => 'queue',
+            'ttr' => 600,
+            'attempts' => 3,
+            'as log' => \yii\queue\LogBehavior::class,
         ],
+
         'log' => [
             'targets' => [
                 [
