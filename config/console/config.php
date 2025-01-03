@@ -1,6 +1,5 @@
 <?php
 
-use yii\queue\LogBehavior;
 use yii\redis\Connection;
 
 $config = [
@@ -53,6 +52,7 @@ $config = [
             'channel' => 'queue',
             'ttr' => 600,
             'attempts' => 3,
+            'mutex' => yii\mutex\MysqlMutex::class,
             'as log' => \yii\queue\LogBehavior::class,
         ],
 
