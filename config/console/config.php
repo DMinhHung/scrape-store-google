@@ -47,15 +47,16 @@ $config = [
             'retries' => 1,
         ],
 
+        'mutex' => [
+            'class' => \yii\redis\Mutex::class,
+        ],
+
         'queue' => [
             'class' => \yii\queue\redis\Queue::class,
             'redis' => 'redis',
             'channel' => 'queue',
             'ttr' => 600,
             'attempts' => 3,
-            'mutex' => [
-                'class' => \yii\redis\Mutex::class,
-            ],
             'as log' => \yii\queue\LogBehavior::class,
         ],
 
