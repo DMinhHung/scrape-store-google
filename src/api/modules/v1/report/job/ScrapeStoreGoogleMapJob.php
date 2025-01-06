@@ -34,15 +34,16 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $storePositions = [];
 
             $currentPoint = 0;
+            $totalPoints = count($points);
 
             foreach ($points as $point) {
-                //calculate process
                 $currentPoint++;
-                $progress = min(100, rand($currentPoint * 10, ($currentPoint + 1) * 10));
+                $progress = min(100, ($currentPoint / $totalPoints) * 100);
                 $message = "$progress%";
-                //calculate process
+
                 $this->processStoreData($point, $regionResults, $storePositions, $business);
-                $progressPayload = ['message' => $message,'token' => $this->token,];
+
+                $progressPayload = ['message' => $message, 'token' => $this->token];
                 $mqttService->publish('local_report/business/data', json_encode($progressPayload));
             }
 
@@ -106,25 +107,20 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             ->send();
 
         if ($response->isOk) {
+            $foundPlace = false;
+
             if (!empty($response->data['places'])) {
                 foreach ($response->data['places'] as $place) {
                     $placeId = $place['placeId'];
+
                     if (!isset($storePositions[$placeId])) {
                         $storePositions[$placeId] = [
                             'totalPosition' => 0,
                             'count' => 0,
-                            'details' => [
-                                'placeId' => $place['placeId'],
-                                'position' => $place['position'],
-                                'title' => $place['title'],
-                                'rating' => $place['rating'],
-                                'type' => $place['type'],
-                                'address' => $place['address'],
-                                'latitude' => $place['latitude'],
-                                'longitude' => $place['longitude'],
-                            ],
+                            'details' => $place
                         ];
                     }
+
                     $storePositions[$placeId]['totalPosition'] += $place['position'];
                     $storePositions[$placeId]['count']++;
 
@@ -133,10 +129,11 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                             'point' => $point,
                             'grid_point_rank' => $place['position'],
                         ];
+                        $foundPlace = true;
                     }
                 }
             }
-            else {
+            if (!$foundPlace) {
                 $regionResults[] = [
                     'point' => $point,
                     'grid_point_rank' => null,
@@ -147,10 +144,9 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
 
     private function calculateAveragePositions($storePositions)
     {
-        $averageStorePositions = [];
-        foreach (array_slice($storePositions, 0, 10, true) as $data) {
+        return array_map(function($data) {
             $averagePosition = $data['totalPosition'] / $data['count'];
-            $averageStorePositions[] = [
+            return [
                 'store_title' => $data['details']['title'],
                 'store_avg' => round($averagePosition, 2),
                 'store_rating' => $data['details']['rating'],
@@ -159,8 +155,6 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                 'store_latitude' => $data['details']['latitude'],
                 'store_longitude' => $data['details']['longitude'],
             ];
-        }
-
-        return $averageStorePositions;
+        }, array_slice($storePositions, 0, 10, true));
     }
 }
