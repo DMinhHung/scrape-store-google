@@ -40,8 +40,8 @@ $config = [
 
         'redis' => [
             'class' => Connection::class,
-            'hostname' => '103.150.124.149',
-            'port' => 11379,
+            'hostname' => env('REDIS_HOST'),
+            'port' => env('REDIS_PORT'),
             'database' => 0,
             'retries' => 1,
         ],
