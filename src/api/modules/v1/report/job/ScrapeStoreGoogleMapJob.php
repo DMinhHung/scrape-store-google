@@ -22,7 +22,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         $mqttService = new MQTTService();
 
@@ -59,7 +59,10 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         }
     }
 
-    private function generateGridPoints()
+    /**
+     * @return array
+     */
+    private function generateGridPoints(): array
     {
         $earth_radius = Business::EARTH_RADIUS;
         $points = [];
@@ -83,7 +86,10 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         return $points;
     }
 
-    private function getBusinessInfo()
+    /**
+     * @return array
+     */
+    private function getBusinessInfo(): array
     {
         return Business::find()->where(['latitude' => $this->latitude, 'longitude' => $this->longitude])->one();
     }
@@ -92,7 +98,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
      * @throws Exception
      * @throws InvalidConfigException
      */
-    private function processStoreData($point, &$regionResults, &$storePositions, $business)
+    private function processStoreData($point, &$regionResults, &$storePositions, $business): void
     {
         $latitude = sprintf('%.15f', $point['latitude']);
         $longitude = sprintf('%.15f', $point['longitude']);
@@ -109,16 +115,12 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         if ($response->isOk) {
             $foundPlace = false;
 
-            if (!empty($response->data['places'])) {
+            if ($response->data['places']) {
                 foreach ($response->data['places'] as $place) {
                     $placeId = $place['placeId'];
 
                     if (!isset($storePositions[$placeId])) {
-                        $storePositions[$placeId] = [
-                            'totalPosition' => 0,
-                            'count' => 0,
-                            'details' => $place
-                        ];
+                        $storePositions[$placeId] = ['totalPosition' => 0, 'count' => 0, 'details' => $place];
                     }
 
                     $storePositions[$placeId]['totalPosition'] += $place['position'];
@@ -132,23 +134,27 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                         $foundPlace = true;
                     }
                 }
-            }
-            if (!$foundPlace) {
-                $regionResults[] = [
-                    'point' => $point,
-                    'grid_point_rank' => null,
-                ];
+                if (!$foundPlace) {
+                    $regionResults[] = [
+                        'point' => $point,
+                        'grid_point_rank' => null,
+                    ];
+                }
             }
         }
     }
 
-    private function calculateAveragePositions($storePositions)
+    /**
+     * @param $storePositions
+     * @return array
+     */
+    private function calculateAveragePositions($storePositions): array
     {
         return array_map(function($data) {
             $averagePosition = $data['totalPosition'] / $data['count'];
             return [
-                'store_title' => $data['details']['title'],
                 'store_avg' => round($averagePosition, 2),
+                'store_title' => $data['details']['title'],
                 'store_rating' => $data['details']['rating'],
                 'store_category' => $data['details']['type'],
                 'store_address' => $data['details']['address'],

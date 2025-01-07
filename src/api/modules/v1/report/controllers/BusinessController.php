@@ -44,6 +44,7 @@ class BusinessController extends Controller
             $longitude = $request->getQueryParam('longitude');
             $zoom = $request->getQueryParam('zoom');
             $distance = $request->getQueryParam('distance');
+
             $token = Yii::$app->security->generateRandomString();
 
             // Push job to queue

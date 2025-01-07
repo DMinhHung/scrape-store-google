@@ -59,18 +59,6 @@ $config = [
             'attempts' => 3,
             'as log' => \yii\queue\LogBehavior::class,
         ],
-
-        'log' => [
-            'targets' => [
-                [
-                    'class' => 'yii\log\FileTarget',
-                    'levels' => ['error', 'warning', 'info'],
-                    'logFile' => '@runtime/logs/app.log',
-                    'maxFileSize' => 1024 * 2,
-                    'maxLogFiles' => 5,
-                ],
-            ],
-        ],
     ],
     'bootstrap' => ['queue'],
 
