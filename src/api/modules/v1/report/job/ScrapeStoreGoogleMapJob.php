@@ -40,7 +40,6 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             sort($milestones);
 
             foreach ($points as $point) {
-                $currentPoint++;
                 $progress = round(($currentPoint / $totalPoints) * 100);
                 $progress = $this->getClosestMilestone($progress, $milestones);
 
@@ -52,7 +51,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                 $mqttService->publish('local_report/business/data', json_encode($progressPayload));
             }
 
-            $averageStorePositions = $this->calculateAveragePositions($storePositions);
+            $averageStorePositions = $this->calculateAveragePositions($storePositions, $mqttService);
 
             // Prepare payload for MQTT
             $mqttPayload = ['grid_point' => $regionResults, 'average_positions' => $averageStorePositions, 'token' => $this->token,];
@@ -143,22 +142,20 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         }
     }
 
-    private function calculateAveragePositions($storePositions)
+    /**
+     * @throws \yii\db\Exception
+     */
+    private function calculateAveragePositions($storePositions, $mqttService)
     {
         $averagePositions = [];
-        $slicedPositions = array_slice($storePositions, 0, 10, true);
-        foreach ($slicedPositions as $data) {
-            $averagePosition = $data['totalPosition'] / $data['count'];
 
-            $averagePositions[] = [
-                'store_avg' => round($averagePosition, 2),
-                'store_title' => $data['details']['title'],
-                'store_rating' => $data['details']['rating'],
-                'store_category' => $data['details']['type'],
-                'store_address' => $data['details']['address'],
-                'store_latitude' => $data['details']['latitude'],
-                'store_longitude' => $data['details']['longitude'],
-            ];
+        if (is_array($storePositions) && !empty($storePositions)) {
+            $slicedPositions = array_slice($storePositions, 0, 10);
+
+            foreach ($slicedPositions as $data) {
+                $mqttPayloadStore = ['store' => $data['details'], 'store_avg' => round($data['totalPosition'] / $data['count'],2) ,'token' => $this->token,];
+                $mqttService->publish('local_report/business/data', json_encode($mqttPayloadStore));
+            }
         }
 
         return $averagePositions;
