@@ -36,13 +36,9 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $currentPoint = 0;
             $totalPoints = count($points);
 
-            $milestones = $this->generateRandomMilestones(3);
-            sort($milestones);
-
             foreach ($points as $point) {
+                $currentPoint++;
                 $progress = round(($currentPoint / $totalPoints) * 100);
-                $progress = $this->getClosestMilestone($progress, $milestones);
-
                 $message = "$progress%";
 
                 $this->processStoreData($point, $regionResults, $storePositions, $business);
@@ -118,7 +114,19 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                     $placeId = $place['placeId'];
 
                     if (!isset($storePositions[$placeId])) {
-                        $storePositions[$placeId] = ['totalPosition' => 0, 'count' => 0, 'details' => $place];
+                        $storePositions[$placeId] = [
+                            'totalPosition' => 0,
+                            'count' => 0,
+                            'details' => [
+                                'title' => $place['title'],
+                                'address' => $place['address'],
+                                'latitude' => $place['latitude'],
+                                'longitude' => $place['longitude'],
+                                'placeId' => $place['placeId'],
+                                'rating' => $place['rating'],
+                                'type' => $place['type'],
+                            ]
+                        ];
                     }
 
                     $storePositions[$placeId]['totalPosition'] += $place['position'];
@@ -150,36 +158,19 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         $averagePositions = [];
 
         if (is_array($storePositions) && !empty($storePositions)) {
-            $slicedPositions = array_slice($storePositions, 0, 10);
+            $slicedPositions = array_slice($storePositions, 0, min(10, count($storePositions)));
 
             foreach ($slicedPositions as $data) {
-                $mqttPayloadStore = ['store' => $data['details'], 'store_avg' => round($data['totalPosition'] / $data['count'],2) ,'token' => $this->token,];
-                $mqttService->publish('local_report/business/data', json_encode($mqttPayloadStore));
+                try {
+                    $mqttPayloadStore = ['store' => $data['details'], 'store_avg' => round($data['totalPosition'] / $data['count'],2) ,'token' => $this->token,];
+                    $mqttService->publish('local_report/business/data', json_encode($mqttPayloadStore));
+                } catch (\Exception $e) {
+                    Yii::error($e->getMessage());
+                }
+
             }
         }
 
         return $averagePositions;
-    }
-
-    private function generateRandomMilestones($num)
-    {
-        $milestones = [];
-        $milestones[] = rand(0, 40);
-        $milestones[] = rand(40, 70);
-        $milestones[] = rand(70, 90);
-        sort($milestones);
-
-        return $milestones;
-    }
-
-    private function getClosestMilestone($progress, $milestones)
-    {
-        $closest = $milestones[0];
-        foreach ($milestones as $milestone) {
-            if (abs($progress - $milestone) < abs($progress - $closest)) {
-                $closest = $milestone;
-            }
-        }
-        return $closest;
     }
 }
