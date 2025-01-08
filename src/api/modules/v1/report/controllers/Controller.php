@@ -7,8 +7,7 @@
 namespace app\api\modules\v1\report\controllers;
 
 
-use yii\filters\auth\CompositeAuth;
-use yii\filters\auth\HttpBearerAuth;
+use app\api\modules\v1\report\behaviors\Auth;
 
 /**'
  * @author  Hung Dao <hungdm@dtsmart.vn>
@@ -21,10 +20,7 @@ class Controller extends \yii\rest\Controller
     {
         $behaviors = parent::behaviors();
         $behaviors['authenticator'] = [
-            'class' => CompositeAuth::class,
-            'authMethods' => [
-                HttpBearerAuth::class,
-            ],
+            'class' => Auth::class,
         ];
         return $behaviors;
     }

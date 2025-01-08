@@ -7,7 +7,6 @@
 namespace app\api\modules\v1\report\controllers;
 
 use Yii;
-use yii\rest\Controller;
 use app\api\helper\response\ApiConstant;
 use app\api\helper\response\ResponseHelper;
 use app\api\modules\v1\report\models\Business;

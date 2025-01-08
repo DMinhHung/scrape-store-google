@@ -14,12 +14,16 @@ use yii\base\Model;
  */
 class Auth extends Model
 {
-    public function loginByAccessToken($token, $type = null)
+    public function attach($owner)
     {
-        $publicApiKey = env("PUBLIC_API_KEY");
-        if ($token === $publicApiKey) {
+        // Cài đặt behavior cho owner nếu cần thiết
+    }
+
+    public function loginByAccessToken($token)
+    {
+        if ($token === getenv("PUBLIC_API_KEY")) {
             return true;
         }
-        return null;
+        return false;
     }
 }
