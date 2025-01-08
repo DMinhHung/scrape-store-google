@@ -71,7 +71,7 @@ class MQTTService
     public function publish(string $topic, string $message)
     {
         try {
-            $this->mqttClient->publish($topic, $message, 1);
+            $this->mqttClient->publish($topic, $message, 0);
             Yii::info("Published topic: {$topic}");
         } catch (\Exception $e) {
             Yii::error("Failed to publish to MQTT broker: " . $e->getMessage());
