@@ -23,7 +23,7 @@ class MQTTService
         $this->port = env("MQTT_PORT_SERVER");
         $this->username = env('MQTT_USERNAME_SERVER');
         $this->password = env('MQTT_PASSWORD_SERVER');
-        $this->clientId = 'fast-connect' . rand(1000, 9999);
+        $this->clientId = 'gmv-report' . rand(1000, 9999);
 
 // Initialize the MQTT Client
         $this->mqttClient = new phpMQTT($this->host, $this->port, $this->clientId);

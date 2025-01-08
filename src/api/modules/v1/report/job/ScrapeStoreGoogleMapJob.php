@@ -22,7 +22,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
-    public function execute($queue): void
+    public function execute($queue)
     {
         $mqttService = new MQTTService();
 
@@ -36,9 +36,14 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
             $currentPoint = 0;
             $totalPoints = count($points);
 
+            $milestones = $this->generateRandomMilestones(3);
+            sort($milestones);
+
             foreach ($points as $point) {
                 $currentPoint++;
-                $progress = min(100, ($currentPoint / $totalPoints) * 100);
+                $progress = round(($currentPoint / $totalPoints) * 100);
+                $progress = $this->getClosestMilestone($progress, $milestones);
+
                 $message = "$progress%";
 
                 $this->processStoreData($point, $regionResults, $storePositions, $business);
@@ -59,10 +64,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         }
     }
 
-    /**
-     * @return array
-     */
-    private function generateGridPoints(): array
+    private function generateGridPoints()
     {
         $earth_radius = Business::EARTH_RADIUS;
         $points = [];
@@ -86,10 +88,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         return $points;
     }
 
-    /**
-     * @return array
-     */
-    private function getBusinessInfo(): array
+    private function getBusinessInfo()
     {
         return Business::find()->where(['latitude' => $this->latitude, 'longitude' => $this->longitude])->one();
     }
@@ -98,7 +97,7 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
      * @throws Exception
      * @throws InvalidConfigException
      */
-    private function processStoreData($point, &$regionResults, &$storePositions, $business): void
+    private function processStoreData($point, &$regionResults, &$storePositions, $business)
     {
         $latitude = sprintf('%.15f', $point['latitude']);
         $longitude = sprintf('%.15f', $point['longitude']);
@@ -144,15 +143,14 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
         }
     }
 
-    /**
-     * @param $storePositions
-     * @return array
-     */
-    private function calculateAveragePositions($storePositions): array
+    private function calculateAveragePositions($storePositions)
     {
-        return array_map(function($data) {
+        $averagePositions = [];
+        $slicedPositions = array_slice($storePositions, 0, 10, true);
+        foreach ($slicedPositions as $data) {
             $averagePosition = $data['totalPosition'] / $data['count'];
-            return [
+
+            $averagePositions[] = [
                 'store_avg' => round($averagePosition, 2),
                 'store_title' => $data['details']['title'],
                 'store_rating' => $data['details']['rating'],
@@ -161,6 +159,30 @@ class ScrapeStoreGoogleMapJob extends BaseObject implements JobInterface
                 'store_latitude' => $data['details']['latitude'],
                 'store_longitude' => $data['details']['longitude'],
             ];
-        }, array_slice($storePositions, 0, 10, true));
+        }
+
+        return $averagePositions;
+    }
+
+    private function generateRandomMilestones($num)
+    {
+        $milestones = [];
+        $milestones[] = rand(0, 40);
+        $milestones[] = rand(40, 70);
+        $milestones[] = rand(70, 90);
+        sort($milestones);
+
+        return $milestones;
+    }
+
+    private function getClosestMilestone($progress, $milestones)
+    {
+        $closest = $milestones[0];
+        foreach ($milestones as $milestone) {
+            if (abs($progress - $milestone) < abs($progress - $closest)) {
+                $closest = $milestone;
+            }
+        }
+        return $closest;
     }
 }

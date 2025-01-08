@@ -22,6 +22,16 @@ $components = [
     // using DB
     'db' => require('_db.php'),
 
+    'log' => [
+        'targets' => [
+            [
+                'class' => 'yii\log\FileTarget',
+                'levels' => ['error', 'warning'],
+                'logFile' => '@runtime/logs/queue.log',
+            ],
+        ],
+    ],
+
     'redis' => [
         'class' => Connection::class,
         'hostname' => env('REDIS_HOST'),
@@ -39,8 +49,6 @@ $components = [
         'class' => \yii\queue\redis\Queue::class,
         'redis' => 'redis',
         'channel' => 'queue',
-        'ttr' => 600,
-        'attempts' => 3,
         'as log' => \yii\queue\LogBehavior::class,
     ],
 
